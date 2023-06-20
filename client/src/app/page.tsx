@@ -1,15 +1,24 @@
 'use client'
 
 import styles from './page.module.css'
-import Form from './components/Form'
+import Form from '../components/Form'
 import { gql } from "@apollo/client";
 import client from "../apollo-client";
-import { UserData } from './type';
-
+import { useRouter } from 'next/navigation';
+import { uploadFileToS3 } from '../utils';
 export default function Home() {
-
-  const onSubmit: any = async (userData: UserData) => {
-    console.log("userData", userData)
+  const { push } = useRouter();
+  const onSubmit: any = async ({ userData, selectedFile }: any) => {
+    const { data: { generateUrl } } = await client.mutate({
+      mutation: gql`
+      mutation generateUrl($fileName:String!,$fileType:String!){
+        generateUrl(fileName:$fileName,fileType:$fileType)
+      }
+        `, variables: { fileName: selectedFile.name, fileType: selectedFile.type }
+    });
+    if (generateUrl) {
+      uploadFileToS3(generateUrl, selectedFile)
+    }
     const { data } = await client.mutate({
       mutation: gql`
         mutation createUser($createUserInput:CreateUserInput!){
@@ -19,7 +28,9 @@ export default function Home() {
         }
         `, variables: { createUserInput: userData }
     });
-    console.log(data);
+    if (data.createUser) {
+      push("/success");
+    }
   }
   return (
     <main className={styles.main}>

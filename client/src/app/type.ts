@@ -8,7 +8,7 @@ export type UserData = {
     position: string,
     companyName: string,
     companyUen: string,
-    documents: string[],
+    documents: string,
 }
 export type StepProp = {
     disabled?: boolean

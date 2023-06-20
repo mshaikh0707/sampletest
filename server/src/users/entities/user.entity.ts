@@ -8,7 +8,7 @@ export class UserEntity {
   @Column()
   name: string;
 
-  @Column()
+  @Column({unique:true})
   email: string;
 
   @Column()
@@ -23,6 +23,6 @@ export class UserEntity {
   @Column()
   companyUen: string;
 
-  @Column("text", { array: true })
-  documents: string[];
+  @Column()
+  documents: string;
 }

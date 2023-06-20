@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Grid, TextField } from '@mui/material';
 import { MuiTelInput } from 'mui-tel-input';
-import { StepProp } from '../type';
+import { StepProp } from '../app/type';
 
 export default function ApplicationInformation(props: StepProp) {
     const { disabled, handleFieldChange, handlePhoneChange, userData, errors } = props;

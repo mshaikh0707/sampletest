@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Checkbox, FormControlLabel, FormGroup, Grid, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import Button from '@mui/material/Button';
-import { StepProp } from '../type';
+import { StepProp } from '../app/type';
 
 export default function TermsAndConditions(props: StepProp) {
     const { disabled, handleSubmit, handleFieldChange, errors } = props;
@@ -16,6 +16,7 @@ export default function TermsAndConditions(props: StepProp) {
                     <FormGroup>
                         <FormControlLabel control={<Checkbox name="termsConditions"
                             onChange={handleFieldChange}
+                            disabled={disabled}
                         />} label="By ticking, you are confirming that you have understood and are agreeing to the details mentioned:" />
                     </FormGroup>
                     <List >

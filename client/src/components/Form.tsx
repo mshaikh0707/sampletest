@@ -12,7 +12,7 @@ import ApplicationInformation from './ApplicationInformation';
 import TermsAndConditions from './TermsAndCoonditons';
 import UploadDocument from './UploadDocument';
 import styled from '@emotion/styled';
-import { UserData, UserDataError } from '../type';
+import { UserData, UserDataError } from '../app/type';
 
 export default function Form(props: any) {
 
@@ -26,26 +26,33 @@ export default function Form(props: any) {
         position: "",
         companyName: "",
         companyUen: "",
-        documents: []
+        documents: ""
     }
     let [userData, setUserData] = React.useState<UserData>(initialUserData);
-    const [errors, setErrors] = React.useState<UserDataError>({ termsConditions: "required" });
+    const [errors, setErrors] = React.useState<any>({ termsConditions: "required" });
     const [activeStep, setActiveStep] = React.useState(0);
+    const [selectedFile, setSelectedFile] = React.useState<any>();
     const [completed, setCompleted] = React.useState<{
         [k: number]: boolean;
     }>({});
 
-    const validateField = (key: string, value: string): string => {
+    const validateField = (key: string, value: string | undefined): string => {
         if (!value) {
             return `This field is required`
         }
         else if (key === "companyUen" && !/^\d{9,10}.\W{0,1}$/.test(value)) {
             return "Company UEN is invalid"
         }
+        else if (key === "email" && !/^[a-zA-Z0-9]+@+[a-zA-Z0-9]+.+[A-z]/.test(value)) {
+            return "Enter a valid email"
+        }
+        else if (key === "reemail" && value !== userData.email) {
+            return "Email does not match"
+        }
         return "";
     }
     const handlePhoneChange = (value: string, info: any) => {
-        console.log(value, info);
+        // console.log(value, info);
         setUserData({ ...userData, phoneNumber: value });
         if (info.nationalNumber.length !== 8) {
             setErrors({ ...errors, phoneNumber: "Enter a 8-digit Mobile Number" })
@@ -57,40 +64,45 @@ export default function Form(props: any) {
     }
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const newData = { ...userData };
+        let newErrors: any = { ...errors }
         let value: string | string[] = e.target.value;
         if (e.target.name === "companyUen") {
             value = e.target.value.toUpperCase();
         } else if (e.target.name === "documents") {
-            value = [e.target.value];
+            console.log("e.target.files", e.target.files[0]);
+            setSelectedFile(e.target.files[0]);
+            // value = e?.target?.files[0].name;
         }
         let error: string = validateField(e.target.name, e.target.value);
         newData[e.target.name as keyof UserData] = value;
-
         if (e.target.name === "termsConditions") {
-            console.log(e.target.checked);
+            // console.log(e.target.checked);
             error = e.target.checked ? "" : "required";
         }
         setUserData(newData);
         if (error) {
-            setErrors({ ...errors, [e.target.name]: error });
+            newErrors[e.target.name] = error;
+            setErrors({ ...newErrors });
         } else {
-            delete errors[e.target.name]
-            setErrors({ ...errors });
+            delete newErrors[e.target.name]
+            setErrors({ ...newErrors });
         }
+        validateStep(newData, newErrors);
     }
 
     const handleSubmit = (): void => {
         let errors: any = {}
         Object.keys(userData).forEach((key: string) => {
-            const value: string = userData[key];
+            const value = userData[key as keyof UserData];
             const error = validateField(key, value);
             if (error) {
                 errors[key] = error;
             }
         });
         if (Object.keys(errors).length === 0) {
-            delete userData["reemail"]
-            onSubmit(userData);
+            delete userData["reemail"],
+                delete userData["termsConditions"],
+                onSubmit({ userData: { ...userData, documents: selectedFile.name }, selectedFile });
         }
 
         setErrors(errors);
@@ -104,55 +116,59 @@ export default function Form(props: any) {
         },
         {
             label: 'Applicant Information',
-            fields: <ApplicationInformation disabled={activeStep == 1} handlePhoneChange={handlePhoneChange} handleFieldChange={handleFieldChange} userData={userData} errors={errors} />,
+            fields: <ApplicationInformation disabled={!completed[0]} handlePhoneChange={handlePhoneChange} handleFieldChange={handleFieldChange} userData={userData} errors={errors} />,
         },
         {
             label: 'Upload Documents',
-            fields: <UploadDocument disabled={activeStep == 2} handleFieldChange={handleFieldChange} userData={userData} errors={errors} />,
+            fields: <UploadDocument disabled={!completed[1]} handleFieldChange={handleFieldChange} userData={userData} errors={errors} />,
 
         },
         {
             label: 'Terms & Conditions',
-            fields: <TermsAndConditions disabled={activeStep == 3} handleFieldChange={handleFieldChange} userData={userData} errors={errors} handleSubmit={handleSubmit} />,
+            fields: <TermsAndConditions disabled={!completed[2]} handleFieldChange={handleFieldChange} userData={userData} errors={errors} handleSubmit={handleSubmit} />,
 
         },
     ];
-
-    // console.log(activeStep)
-
-    const totalSteps = () => {
-        return steps.length;
-    };
-
-    const completedSteps = () => {
-        return Object.keys(completed).length;
-    };
 
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
-    // const handleBack = () => {
-    //     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    // };
+    const validateStep = (userData: any, errors: any) => {
+        console.log(userData);
+        let completedStep = 0;
+        let stepsCompleted = { ...completed }
+        if (userData.companyName && userData.companyUen && !errors.companyName && !errors.companyUen) {
+            stepsCompleted[completedStep] = true;
+            if (userData.name && userData.email && !errors.name && !errors.email) {
+                completedStep = 1;
+                stepsCompleted[completedStep] = true;
+                if (userData.documents && !errors.documents) {
+                    completedStep = 2;
+                    stepsCompleted[completedStep] = true;
+                    if (userData.termsConditions && !errors.termsConditions) {
+                        completedStep = 3;
+                        stepsCompleted[completedStep] = true;
+                    } else {
+                        stepsCompleted = { 0: true, 1: true, 2: true }
+                    }
+                } else {
+                    stepsCompleted = { 0: true, 1: true }
+                }
+            } else {
+                stepsCompleted = { 0: true }
+            }
+            console.log("completedStep:", completedStep);
+            setCompleted({ ...stepsCompleted })
+            setActiveStep(completedStep + 1);
+        } else {
+            setCompleted({})
+            setActiveStep(completedStep);
 
-    // const handleReset = () => {
-    //     setActiveStep(0);
-    // };
-    const validateStep = () => {
-        return true;
+
+        }
+
     }
-    // React.useEffect(() => {
-    //     const errorKeys = Object.keys(errors);
-    //     if (validateStep()) {
-    //         console.log("activeStep", activeStep);
-    //         handleNext();
-    //         setCompleted({ ...completed, [activeStep]: true })
-    //     } else {
-    //         setActiveStep(0);
-    //     }
-    // }, [userData]);
-
 
     const CustomStepLable = styled(Box)({
         fontSize: 20,

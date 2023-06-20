@@ -23,6 +23,6 @@ export class User {
   @Field()
   position: string;
 
-  @Field(type => [String])
-  documents: string[];
+  @Field()
+  documents: string;
 }

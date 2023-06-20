@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Grid, TextField } from '@mui/material';
-import { StepProp } from '../type';
+import { StepProp } from '../app/type';
 
 export default function CompanyInformation({ handleFieldChange, userData, errors }: StepProp) {
     const { companyUen, companyName } = userData

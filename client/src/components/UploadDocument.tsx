@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Checkbox, FormControlLabel, FormGroup, Grid, List, ListItem, ListItemIcon, ListItemText, TextField } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { MuiFileInput } from 'mui-file-input';
-import { StepProp } from '../type';
+import { StepProp } from '../app/type';
 
 export default function UploadDocument(props: StepProp) {
     const { disabled, handleFieldChange, userData, errors } = props;
@@ -18,6 +18,7 @@ export default function UploadDocument(props: StepProp) {
                         value={userData?.documents}
                         error={!!errors?.documents}
                         helperText={errors?.documents}
+                        inputProps={{ accept: "application/pdf" }}
                     />
                 </Grid>
                 <Grid item xs={6}>

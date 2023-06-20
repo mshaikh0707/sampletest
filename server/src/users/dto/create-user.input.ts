@@ -23,7 +23,7 @@ export class CreateUserInput {
   @Field()
   position: string;
 
-  @Field(type => [String])
-  documents: string[];
+  @Field()
+  documents: string;
 
 }

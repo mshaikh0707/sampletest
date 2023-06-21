@@ -8,12 +8,12 @@ export class AppService {
   constructor() {
     s3 = new AWS.S3({
       signatureVersion: 'v4',
-      accessKeyId: "AKIAR4H3FUFSG74ALK5B",
-      secretAccessKey: "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",
+      accessKeyId: "",
+      secretAccessKey: "",
       region: "ap-south-1",
     });
     // s3 = new AWS.S3();
-    bucket = "blackandwhite";
+    bucket = "";
 
   }
   getHello(): string {
